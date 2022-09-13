@@ -104,7 +104,7 @@ def enrich_logs(blocks, logs):
             'address',
             'data',
             'topics',
-            'block_number'
+            'block_number'            
         ],
         [
             ('timestamp', 'block_timestamp'),
@@ -128,7 +128,7 @@ def enrich_token_transfers(blocks, token_transfers):
             'value',
             'transaction_hash',
             'log_index',
-            'block_number'
+            'block_number',            
         ],
         [
             ('timestamp', 'block_timestamp'),

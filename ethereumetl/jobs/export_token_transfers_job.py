@@ -27,6 +27,10 @@ from ethereumetl.mappers.receipt_log_mapper import EthReceiptLogMapper
 from ethereumetl.service.token_transfer_extractor import EthTokenTransferExtractor, TRANSFER_EVENT_TOPIC
 from ethereumetl.utils import validate_range
 
+from ethereumetl.json_rpc_requests import generate_get_block_by_number_json_rpc
+from ethereumetl.mappers.block_mapper import EthBlockMapper
+from ethereumetl.utils import rpc_response_batch_to_results, validate_range
+import json
 
 class ExportTokenTransfersJob(BaseJob):
     def __init__(
@@ -34,6 +38,7 @@ class ExportTokenTransfersJob(BaseJob):
             start_block,
             end_block,
             batch_size,
+            batch_web3_provider,
             web3,
             item_exporter,
             max_workers,
@@ -42,6 +47,7 @@ class ExportTokenTransfersJob(BaseJob):
         self.start_block = start_block
         self.end_block = end_block
 
+        self.batch_web3_provider = batch_web3_provider
         self.web3 = web3
         self.tokens = tokens
         self.item_exporter = item_exporter
@@ -51,6 +57,8 @@ class ExportTokenTransfersJob(BaseJob):
         self.receipt_log_mapper = EthReceiptLogMapper()
         self.token_transfer_mapper = EthTokenTransferMapper()
         self.token_transfer_extractor = EthTokenTransferExtractor()
+
+        self.block_mapper = EthBlockMapper()
 
     def _start(self):
         self.item_exporter.open()
@@ -71,6 +79,13 @@ class ExportTokenTransfersJob(BaseJob):
             'topics': [TRANSFER_EVENT_TOPIC]
         }
 
+        blocks_rpc = list(generate_get_block_by_number_json_rpc(block_number_batch, False))
+        response = self.batch_web3_provider.make_batch_request(json.dumps(blocks_rpc))
+        results = rpc_response_batch_to_results(response)
+        #blocks = [self.block_mapper.json_dict_to_block(result) for result in results]
+        blocks_list = [self.block_mapper.json_dict_to_block(result) for result in results]
+        blocks = {b.number: b for b in blocks_list }
+
         if self.tokens is not None and len(self.tokens) > 0:
             filter_params['address'] = self.tokens
 
@@ -79,7 +94,11 @@ class ExportTokenTransfersJob(BaseJob):
         for event in events:
             log = self.receipt_log_mapper.web3_dict_to_receipt_log(event)
             token_transfer = self.token_transfer_extractor.extract_transfer_from_log(log)
+                        
             if token_transfer is not None:
+                # set timestamp
+                token_transfer.block_timestamp = blocks[token_transfer.block_number].timestamp
+                #print(vars(token_transfer))
                 self.item_exporter.export_item(self.token_transfer_mapper.token_transfer_to_dict(token_transfer))
 
         self.web3.eth.uninstallFilter(event_filter.filter_id)
