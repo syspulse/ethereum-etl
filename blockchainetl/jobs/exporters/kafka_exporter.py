@@ -20,7 +20,7 @@ class KafkaItemExporter:
         try:
             return output.split('/')[1]
         except KeyError:
-            raise Exception('Invalid kafka output param, It should be in format of "kafka/127.0.0.1:9092"')
+            raise Exception('Invalid kafka output param, It should be in format of "kafka/127.0.0.1:9092/<topic_prefix>"')
 
     def open(self):
         pass
