@@ -146,6 +146,7 @@ def export_all_common(partitions, output_dir, provider_uri, max_workers, batch_s
                 start_block=batch_start_block,
                 end_block=batch_end_block,
                 batch_size=batch_size,
+                batch_web3_provider=ThreadLocalProxy(lambda: get_provider_from_uri(provider_uri, batch=True)),
                 web3=ThreadLocalProxy(lambda: build_web3(get_provider_from_uri(provider_uri))),
                 item_exporter=token_transfers_item_exporter(token_transfers_file),
                 max_workers=max_workers)
