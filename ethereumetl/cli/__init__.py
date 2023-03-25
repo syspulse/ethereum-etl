@@ -46,6 +46,8 @@ from ethereumetl.cli.get_block_range_for_timestamps import get_block_range_for_t
 from ethereumetl.cli.get_keccak_hash import get_keccak_hash
 from ethereumetl.cli.stream import stream
 
+from ethereumetl.cli.export_logs import export_logs
+
 
 @click.group()
 @click.version_option(version='2.1.2.1')
@@ -68,6 +70,7 @@ cli.add_command(export_geth_traces, "export_geth_traces")
 cli.add_command(extract_geth_traces, "extract_geth_traces")
 cli.add_command(extract_contracts, "extract_contracts")
 cli.add_command(extract_tokens, "extract_tokens")
+cli.add_command(export_logs, "export_logs")
 
 # streaming
 cli.add_command(stream, "stream")

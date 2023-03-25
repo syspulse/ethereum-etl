@@ -52,6 +52,9 @@ class EthReceiptLogMapper(object):
             transaction_hash = transaction_hash.hex()
         receipt_log.transaction_hash = transaction_hash
 
+        ### ATTENTION, was missing here
+        receipt_log.transaction_index = dict.get('transactionIndex')
+
         block_hash = dict.get('blockHash')
         if block_hash is not None:
             block_hash = block_hash.hex()
@@ -74,6 +77,20 @@ class EthReceiptLogMapper(object):
             'transaction_index': receipt_log.transaction_index,
             'block_hash': receipt_log.block_hash,
             'block_number': receipt_log.block_number,
+            'address': receipt_log.address,
+            'data': receipt_log.data,
+            'topics': receipt_log.topics
+        }
+    
+    def receipt_log_to_dict_v2(self, receipt_log):
+        return {
+            'type': 'log',
+            'log_index': receipt_log.log_index,
+            'transaction_hash': receipt_log.transaction_hash,
+            'transaction_index': receipt_log.transaction_index,
+            'block_hash': receipt_log.block_hash,
+            'block_number': receipt_log.block_number,
+            'block_timestamp': receipt_log.block_timestamp,
             'address': receipt_log.address,
             'data': receipt_log.data,
             'topics': receipt_log.topics
