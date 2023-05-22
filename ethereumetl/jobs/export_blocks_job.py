@@ -26,8 +26,10 @@ import json
 from ethereumetl.executors.batch_work_executor import BatchWorkExecutor
 from blockchainetl.jobs.base_job import BaseJob
 from ethereumetl.json_rpc_requests import generate_get_block_by_number_json_rpc
+from ethereumetl.json_rpc_requests import generate_get_receipt_json_rpc
 from ethereumetl.mappers.block_mapper import EthBlockMapper
 from ethereumetl.mappers.transaction_mapper import EthTransactionMapper
+from ethereumetl.mappers.receipt_mapper import EthReceiptMapper
 from ethereumetl.utils import rpc_response_batch_to_results, validate_range
 
 
@@ -59,6 +61,7 @@ class ExportBlocksJob(BaseJob):
 
         self.block_mapper = EthBlockMapper()
         self.transaction_mapper = EthTransactionMapper()
+        self.receipt_mapper = EthReceiptMapper()
 
     def _start(self):
         self.item_exporter.open()
@@ -80,11 +83,18 @@ class ExportBlocksJob(BaseJob):
             self._export_block(block)
 
     def _export_block(self, block):
+        transaction_hashes = list(map(lambda t:t.hash, block.transactions)) 
+        receipts_rpc = list(generate_get_receipt_json_rpc(transaction_hashes))
+        response = self.batch_web3_provider.make_batch_request(json.dumps(receipts_rpc))
+        results = rpc_response_batch_to_results(response)
+        receipts_list = [self.receipt_mapper.json_dict_to_receipt(result) for result in results]
+        receipts = dict((r.transaction_hash, r) for r in receipts_list)
+            
         if self.export_blocks:
             self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
         if self.export_transactions:
             for tx in block.transactions:
-                self.item_exporter.export_item(self.transaction_mapper.transaction_to_dict(tx))
+                self.item_exporter.export_item(self.transaction_mapper.transaction_receipt_to_dict(tx,receipts[tx.hash]))
 
     def _end(self):
         self.batch_work_executor.shutdown()

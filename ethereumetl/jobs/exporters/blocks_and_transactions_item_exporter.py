@@ -60,6 +60,14 @@ TRANSACTION_FIELDS_TO_EXPORT = [
     'block_timestamp',
     'max_fee_per_gas',
     'max_priority_fee_per_gas',
+    
+    'cumulative_gas_used',
+    'gas_used',
+    'contract_address',
+    'root',
+    'status',
+    'effective_gas_price',
+    
     'transaction_type'
 ]
 

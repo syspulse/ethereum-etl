@@ -64,3 +64,31 @@ class EthTransactionMapper(object):
             'max_priority_fee_per_gas': transaction.max_priority_fee_per_gas,
             'transaction_type': transaction.transaction_type
         }
+    
+    def transaction_receipt_to_dict(self, transaction,receipt):
+        return {
+            'type': 'transaction',
+            'hash': transaction.hash,
+            'nonce': transaction.nonce,
+            'block_hash': transaction.block_hash,
+            'block_number': transaction.block_number,
+            'block_timestamp': transaction.block_timestamp,
+            'transaction_index': transaction.transaction_index,
+            'from_address': transaction.from_address,
+            'to_address': transaction.to_address,
+            'value': transaction.value,
+            'gas': transaction.gas,
+            'gas_price': transaction.gas_price,
+            'input': transaction.input,
+            'max_fee_per_gas': transaction.max_fee_per_gas,
+            'max_priority_fee_per_gas': transaction.max_priority_fee_per_gas,
+            
+            'cumulative_gas_used': receipt.cumulative_gas_used,
+            'gas_used': receipt.gas_used,
+            'contract_address': receipt.contract_address,
+            'root': receipt.root,
+            'status': receipt.status,
+            'effective_gas_price': receipt.effective_gas_price,
+
+            'transaction_type': transaction.transaction_type  
+        }

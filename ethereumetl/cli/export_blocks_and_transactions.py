@@ -54,6 +54,8 @@ def export_blocks_and_transactions(start_block, end_block, batch_size, provider_
     if blocks_output is None and transactions_output is None:
         raise ValueError('Either --blocks-output or --transactions-output options must be provided')
 
+    # batching = batch_size > 1
+
     job = ExportBlocksJob(
         start_block=start_block,
         end_block=end_block,
