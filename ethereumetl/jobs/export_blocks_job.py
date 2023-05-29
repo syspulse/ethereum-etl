@@ -83,12 +83,13 @@ class ExportBlocksJob(BaseJob):
             self._export_block(block)
 
     def _export_block(self, block):
-        transaction_hashes = list(map(lambda t:t.hash, block.transactions)) 
-        receipts_rpc = list(generate_get_receipt_json_rpc(transaction_hashes))
-        response = self.batch_web3_provider.make_batch_request(json.dumps(receipts_rpc))
-        results = rpc_response_batch_to_results(response)
-        receipts_list = [self.receipt_mapper.json_dict_to_receipt(result) for result in results]
-        receipts = dict((r.transaction_hash, r) for r in receipts_list)
+        if block.transaction_count > 0:
+            transaction_hashes = list(map(lambda t:t.hash, block.transactions)) 
+            receipts_rpc = list(generate_get_receipt_json_rpc(transaction_hashes))
+            response = self.batch_web3_provider.make_batch_request(json.dumps(receipts_rpc))
+            results = rpc_response_batch_to_results(response)
+            receipts_list = [self.receipt_mapper.json_dict_to_receipt(result) for result in results]
+            receipts = dict((r.transaction_hash, r) for r in receipts_list)
             
         if self.export_blocks:
             self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
