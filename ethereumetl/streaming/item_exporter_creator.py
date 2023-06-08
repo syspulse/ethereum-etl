@@ -92,7 +92,7 @@ def create_item_exporter(output):
             'block': topic + 'blocks',
             'transaction': topic + 'transactions',
             'log': topic + 'logs',
-            'token_transfer': topic + 'token_transfers',
+            'token_transfer': topic + 'transfers', 
             'trace': topic + 'traces',
             'contract': topic + 'contracts',
             'token': topic + 'tokens',
