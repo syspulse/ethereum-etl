@@ -87,7 +87,11 @@ class ExportTxFatJob(BaseJob):
             
         # self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
         for tx in block.transactions:
-            self.item_exporter.export_item(self.transaction_mapper.transaction_fat_to_dict(block,tx,receipts[tx.hash]))
+            logs = "["
+            for log in receipts[tx.hash].logs:
+                logs = logs + f'"index": {log.log_index},"address":{log.address},"data":{log.data},"topics":{log.topics}'
+            logs = logs + "]"
+            self.item_exporter.export_item(self.transaction_mapper.transaction_fat_to_dict(block,tx,receipts[tx.hash],logs))
 
     def _end(self):
         self.batch_work_executor.shutdown()

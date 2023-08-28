@@ -32,6 +32,8 @@ class EthItemIdCalculator:
 
         item_type = item.get('type')
 
+        if item_type == 'tx' and item.get('hash') is not None:
+            return concat(item_type, item.get('hash'))
         if item_type == 'block' and item.get('hash') is not None:
             return concat(item_type, item.get('hash'))
         elif item_type == 'transaction' and item.get('hash') is not None:
