@@ -67,7 +67,8 @@ def validate_range(range_start_incl, range_end_incl):
 
 
 def rpc_response_batch_to_results(response):
-    for response_item in response:
+    #reponse = {'jsonrpc': '2.0', 'id': None, 'error': {'code': -32600, 'message': 'empty batch'}}
+    for response_item in response:        
         yield rpc_response_to_result(response_item)
 
 

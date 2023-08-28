@@ -28,13 +28,13 @@ from blockchainetl.jobs.base_job import BaseJob
 from ethereumetl.json_rpc_requests import generate_get_block_by_number_json_rpc
 from ethereumetl.json_rpc_requests import generate_get_receipt_json_rpc
 from ethereumetl.mappers.block_mapper import EthBlockMapper
-from ethereumetl.mappers.transaction_mapper import EthTransactionMapper
+from ethereumetl.mappers.transaction_fat_mapper import EthTransactionFatMapper
 from ethereumetl.mappers.receipt_mapper import EthReceiptMapper
 from ethereumetl.utils import rpc_response_batch_to_results, validate_range
 
 
 # Exports blocks and transactions
-class ExportBlocksJob(BaseJob):
+class ExportTxFatJob(BaseJob):
     def __init__(
             self,
             start_block,
@@ -42,9 +42,7 @@ class ExportBlocksJob(BaseJob):
             batch_size,
             batch_web3_provider,
             max_workers,
-            item_exporter,
-            export_blocks=True,
-            export_transactions=True):
+            item_exporter):
         validate_range(start_block, end_block)
         self.start_block = start_block
         self.end_block = end_block
@@ -54,13 +52,9 @@ class ExportBlocksJob(BaseJob):
         self.batch_work_executor = BatchWorkExecutor(batch_size, max_workers)
         self.item_exporter = item_exporter
 
-        self.export_blocks = export_blocks
-        self.export_transactions = export_transactions
-        if not self.export_blocks and not self.export_transactions:
-            raise ValueError('At least one of export_blocks or export_transactions must be True')
-
+        
         self.block_mapper = EthBlockMapper()
-        self.transaction_mapper = EthTransactionMapper()
+        self.transaction_mapper = EthTransactionFatMapper()
         self.receipt_mapper = EthReceiptMapper()
 
     def _start(self):
@@ -74,7 +68,7 @@ class ExportBlocksJob(BaseJob):
         )
 
     def _export_batch(self, block_number_batch):
-        blocks_rpc = list(generate_get_block_by_number_json_rpc(block_number_batch, self.export_transactions))
+        blocks_rpc = list(generate_get_block_by_number_json_rpc(block_number_batch, True))
         response = self.batch_web3_provider.make_batch_request(json.dumps(blocks_rpc))
         results = rpc_response_batch_to_results(response)
         blocks = [self.block_mapper.json_dict_to_block(result) for result in results]
@@ -83,21 +77,17 @@ class ExportBlocksJob(BaseJob):
             self._export_block(block)
 
     def _export_block(self, block):
-        receipts = {}
-        if block.transaction_count > 0 & len(block.transactions) > 0:
+        if block.transaction_count > 0:
             transaction_hashes = list(map(lambda t:t.hash, block.transactions)) 
             receipts_rpc = list(generate_get_receipt_json_rpc(transaction_hashes))
-                        
             response = self.batch_web3_provider.make_batch_request(json.dumps(receipts_rpc))
             results = rpc_response_batch_to_results(response)
             receipts_list = [self.receipt_mapper.json_dict_to_receipt(result) for result in results]
             receipts = dict((r.transaction_hash, r) for r in receipts_list)
             
-        if self.export_blocks:
-            self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
-        if self.export_transactions & len(receipts) > 0:
-            for tx in block.transactions:
-                self.item_exporter.export_item(self.transaction_mapper.transaction_receipt_to_dict(tx,receipts[tx.hash]))
+        # self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
+        for tx in block.transactions:
+            self.item_exporter.export_item(self.transaction_mapper.transaction_fat_to_dict(block,tx,receipts[tx.hash]))
 
     def _end(self):
         self.batch_work_executor.shutdown()

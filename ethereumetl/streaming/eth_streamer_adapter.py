@@ -4,6 +4,7 @@ from blockchainetl.jobs.exporters.console_item_exporter import ConsoleItemExport
 from blockchainetl.jobs.exporters.in_memory_item_exporter import InMemoryItemExporter
 from ethereumetl.enumeration.entity_type import EntityType
 from ethereumetl.jobs.export_blocks_job import ExportBlocksJob
+from ethereumetl.jobs.export_tx_fat_job import ExportTxFatJob
 from ethereumetl.jobs.export_receipts_job import ExportReceiptsJob
 from ethereumetl.jobs.export_traces_job import ExportTracesJob
 from ethereumetl.jobs.extract_contracts_job import ExtractContractsJob
@@ -41,6 +42,12 @@ class EthStreamerAdapter:
         return int(w3.eth.getBlock("latest").number)
 
     def export_all(self, start_block, end_block):
+
+        # Fat tx
+        transactions_fat = []
+        if self._should_export(EntityType.TRANSACTION_FAT):
+            transactions_fat = self._export_tx_fat(start_block, end_block)
+
         # Export blocks and transactions
         blocks, transactions = [], []
         if self._should_export(EntityType.BLOCK) or self._should_export(EntityType.TRANSACTION):
@@ -85,6 +92,7 @@ class EthStreamerAdapter:
             if EntityType.CONTRACT in self.entity_types else []
         enriched_tokens = enrich_tokens(blocks, tokens) \
             if EntityType.TOKEN in self.entity_types else []
+                
 
         logging.info('Exporting with ' + type(self.item_exporter).__name__)
 
@@ -95,12 +103,27 @@ class EthStreamerAdapter:
             sort_by(enriched_token_transfers, ('block_number', 'log_index')) + \
             sort_by(enriched_traces, ('block_number', 'trace_index')) + \
             sort_by(enriched_contracts, ('block_number',)) + \
-            sort_by(enriched_tokens, ('block_number',))
+            sort_by(enriched_tokens, ('block_number',)) + \
+            sort_by(transactions_fat, ('block_number', 'transaction_index')) 
 
         self.calculate_item_ids(all_items)
         self.calculate_item_timestamps(all_items)
 
         self.item_exporter.export_items(all_items)
+
+    def _export_tx_fat(self, start_block, end_block):
+        tx_fat_item_exporter = InMemoryItemExporter(item_types=['tx'])
+        tx_fat_job = ExportTxFatJob(
+            start_block=start_block,
+            end_block=end_block,
+            batch_size=self.batch_size,
+            batch_web3_provider=self.batch_web3_provider,
+            max_workers=self.max_workers,
+            item_exporter = tx_fat_item_exporter,            
+        )
+        tx_fat_job.run()
+        transactions = tx_fat_item_exporter.get_items('tx')
+        return transactions
 
     def _export_blocks_and_transactions(self, start_block, end_block):
         blocks_and_transactions_item_exporter = InMemoryItemExporter(item_types=['block', 'transaction'])
@@ -209,6 +232,9 @@ class EthStreamerAdapter:
         if entity_type == EntityType.TOKEN:
             return EntityType.TOKEN in self.entity_types
 
+        if entity_type == EntityType.TRANSACTION_FAT:
+            return EntityType.TRANSACTION_FAT in self.entity_types
+        
         raise ValueError('Unexpected entity type ' + entity_type)
 
     def calculate_item_ids(self, items):
