@@ -51,7 +51,7 @@ from ethereumetl.cli.export_logs import export_logs
 
 
 @click.group()
-@click.version_option(version='2.1.2.5')
+@click.version_option(version='2.1.2.6')
 @click.pass_context
 def cli(ctx):
     pass
