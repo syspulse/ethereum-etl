@@ -49,7 +49,7 @@ class EthTransactionFatMapper(object):
         return transaction
 
     
-    def transaction_fat_to_dict(self, block, transaction,receipt,logs):
+    def transaction_fat_to_dict(self, block, transaction, receipt, receipt_logs):
         return {
             #'type': 'transaction',
             'type': 'tx',
@@ -98,5 +98,5 @@ class EthTransactionFatMapper(object):
             'transaction_type': transaction.transaction_type,
 
             # -------------------------------------- Logs
-            'logs': logs
+            'logs': receipt_logs
         }

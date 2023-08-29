@@ -31,7 +31,7 @@ from ethereumetl.mappers.block_mapper import EthBlockMapper
 from ethereumetl.mappers.transaction_fat_mapper import EthTransactionFatMapper
 from ethereumetl.mappers.receipt_mapper import EthReceiptMapper
 from ethereumetl.utils import rpc_response_batch_to_results, validate_range
-
+from ethereumetl.utils import hex_to_dec
 
 # Exports blocks and transactions
 class ExportTxFatJob(BaseJob):
@@ -87,10 +87,14 @@ class ExportTxFatJob(BaseJob):
             
         # self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
         for tx in block.transactions:
-            logs = "["
+            # logs = "["
+            # for log in receipts[tx.hash].logs:
+            #     #logs = logs + f'{ "index": {log.log_index},"address":"{log.address}"","data":"{log.data}","topics":{log.topics} }'
+            #     logs = logs + f'{ "index": {log.log_index},"address":"{log.address}"","data":"{log.data}" }'
+            # logs = logs + "]"
+            logs = []
             for log in receipts[tx.hash].logs:
-                logs = logs + f'"index": {log.log_index},"address":{log.address},"data":{log.data},"topics":{log.topics}'
-            logs = logs + "]"
+                logs.append({ "index": log.log_index, "address":log.address, "data": log.data, "topics":[topic for topic in log.topics]})
             self.item_exporter.export_item(self.transaction_mapper.transaction_fat_to_dict(block,tx,receipts[tx.hash],logs))
 
     def _end(self):

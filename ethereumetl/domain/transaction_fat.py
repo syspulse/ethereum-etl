@@ -54,3 +54,5 @@ class EthTransactionFat(object):
         self.block_gas_used = None
         self.block_timestamp = None
         self.block_base_fee_per_gas = 0
+
+        self.logs = []

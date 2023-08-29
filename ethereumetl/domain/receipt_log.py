@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import json
 
-class EthReceiptLog(object):
+class EthReceiptLog(object):    
     def __init__(self):
         self.log_index = None
         self.transaction_hash = None
