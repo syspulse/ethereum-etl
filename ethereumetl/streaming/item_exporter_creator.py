@@ -96,6 +96,7 @@ def create_item_exporter(output):
             'trace': topic + 'traces',
             'contract': topic + 'contracts',
             'token': topic + 'tokens',
+            'tx': topic + 'tx',
         })
 
     else:
