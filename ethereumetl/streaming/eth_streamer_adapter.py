@@ -140,6 +140,7 @@ class EthStreamerAdapter:
         blocks_and_transactions_job.run()
         blocks = blocks_and_transactions_item_exporter.get_items('block')
         transactions = blocks_and_transactions_item_exporter.get_items('transaction')
+                
         return blocks, transactions
 
     def _export_receipts_and_logs(self, transactions):
