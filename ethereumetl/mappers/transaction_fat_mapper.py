@@ -55,6 +55,8 @@ class EthTransactionFatMapper(object):
             'type': 'tx',
 
             'block': {
+                'number': block.number,
+                'hash': block.hash,
                 'parent_hash': block.parent_hash,
                 'nonce': block.nonce,
                 'sha3_uncles': block.sha3_uncles,
@@ -70,15 +72,16 @@ class EthTransactionFatMapper(object):
                 'gas_limit': block.gas_limit,
                 'gas_used': block.gas_used,
                 'timestamp': block.timestamp,
+                'transaction_count': block.transaction_count,
                 'base_fee_per_gas': block.base_fee_per_gas,
             },
 
             # ----------------------------------- Tx + Receipt
             'hash': transaction.hash,
             'nonce': transaction.nonce,
-            'block_hash': transaction.block_hash,
-            'block_number': transaction.block_number,
-            'block_timestamp': transaction.block_timestamp,
+            # 'block_hash': transaction.block_hash,
+            # 'block_number': transaction.block_number,
+            # 'block_timestamp': transaction.block_timestamp,
             'transaction_index': transaction.transaction_index,
             'from_address': transaction.from_address,
             'to_address': transaction.to_address,
