@@ -86,7 +86,7 @@ class ExportTxFatJob(BaseJob):
             receipts = dict((r.transaction_hash, r) for r in receipts_list)
             
         # self.item_exporter.export_item(self.block_mapper.block_to_dict(block))
-        for tx in block.transactions:
+        for tx in block.transactions:            
             logs = []
             for log in receipts[tx.hash].logs:
                 logs.append({ "index": log.log_index, "address":log.address, "data": log.data, "topics":[topic for topic in log.topics]})

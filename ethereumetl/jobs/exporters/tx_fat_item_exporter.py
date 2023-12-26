@@ -67,6 +67,9 @@ TRANSACTION_FIELDS_TO_EXPORT = [
     'root',
     'status',
     'effective_gas_price',
+
+    'block',
+    'logs'
 ]
 
 
