@@ -38,6 +38,7 @@ class Streamer:
             start_block=None,
             end_block=None,
             period_seconds=10,
+            throttle=1,
             block_batch_size=10,
             retry_errors=True,
             pid_file=None):
@@ -47,6 +48,7 @@ class Streamer:
         self.start_block = start_block
         self.end_block = end_block
         self.period_seconds = period_seconds
+        self.throttle = throttle
         self.block_batch_size = block_batch_size
         self.retry_errors = retry_errors
         self.pid_file = pid_file
@@ -84,6 +86,8 @@ class Streamer:
             if synced_blocks <= 0:
                 logging.info('Nothing to sync. Sleeping for {} seconds...'.format(self.period_seconds))
                 time.sleep(self.period_seconds)
+            else:
+                time.sleep(self.throttle)
 
     def _sync_cycle(self):
         current_block = self.blockchain_streamer_adapter.get_current_block_number()
