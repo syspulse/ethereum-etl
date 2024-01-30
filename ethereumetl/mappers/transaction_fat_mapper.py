@@ -79,9 +79,14 @@ class EthTransactionFatMapper(object):
             # ----------------------------------- Tx + Receipt
             'hash': transaction.hash,
             'nonce': transaction.nonce,
-            # 'block_hash': transaction.block_hash,
-            # 'block_number': transaction.block_number,
-            # 'block_timestamp': transaction.block_timestamp,
+
+            # TODO: 
+            # ATTENTION
+            # Remove after 
+            'block_hash': transaction.block_hash,
+            'block_number': transaction.block_number,
+            'block_timestamp': transaction.block_timestamp,
+
             'transaction_index': transaction.transaction_index,
             'from_address': transaction.from_address,
             'to_address': transaction.to_address,

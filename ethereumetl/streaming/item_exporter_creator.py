@@ -31,7 +31,7 @@ def create_item_exporters(outputs):
     return MultiItemExporter(item_exporters)
 
 
-def create_item_exporter(output):
+def create_item_exporter(output):    
     item_exporter_type = determine_item_exporter_type(output)
     if item_exporter_type == ItemExporterType.PUBSUB:
         from blockchainetl.jobs.exporters.google_pubsub_item_exporter import GooglePubSubItemExporter
@@ -80,7 +80,7 @@ def create_item_exporter(output):
         from blockchainetl.jobs.exporters.gcs_item_exporter import GcsItemExporter
         bucket, path = get_bucket_and_path_from_gcs_output(output)
         item_exporter = GcsItemExporter(bucket=bucket, path=path)
-    elif item_exporter_type == ItemExporterType.CONSOLE:
+    elif item_exporter_type == ItemExporterType.CONSOLE:        
         item_exporter = ConsoleItemExporter()
     elif item_exporter_type == ItemExporterType.KAFKA:
         from blockchainetl.jobs.exporters.kafka_exporter import KafkaItemExporter        
